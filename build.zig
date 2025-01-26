@@ -16,19 +16,11 @@ pub fn build(b: *std.Build) void {
     });
     b.installArtifact(exe);
 
-    @import("zgpu").addLibraryPathsTo(exe);
-
     const zglfw = b.dependency("zglfw", .{});
-    const zgpu = b.dependency("zgpu", .{});
-    const zmath = b.dependency("zmath", .{});
-
     exe.root_module.addImport("zglfw", zglfw.module("root"));
-    exe.root_module.addImport("zgpu", zgpu.module("root"));
-    exe.root_module.addImport("zmath", zmath.module("root"));
 
     if (target.result.os.tag != .emscripten) {
         exe.linkLibrary(zglfw.artifact("glfw"));
-        exe.linkLibrary(zgpu.artifact("zdawn"));
     }
 
     const run_cmd = b.addRunArtifact(exe);
