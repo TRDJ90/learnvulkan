@@ -2,8 +2,8 @@ const std = @import("std");
 const vk = @import("vulkan");
 const vulkan = @import("vulkan.zig");
 
-const BaseDispatcher = vulkan.BaseDispatch;
-const InstanceDispatcher = vulkan.InstanceDispatch;
+const BaseDispatcher = vulkan.BaseDispatcher;
+const InstanceDispatcher = vulkan.InstanceDispatcher;
 
 const severity_info = vk.DebugUtilsMessageSeverityFlagsEXT{ .info_bit_ext = true };
 const severity_erro = vk.DebugUtilsMessageSeverityFlagsEXT{ .error_bit_ext = true };
@@ -37,12 +37,12 @@ pub fn createDebugUtilsMessenger(
     create_info: *vk.DebugUtilsMessengerCreateInfoEXT,
     debug_messenger: *vk.DebugUtilsMessengerEXT,
 ) void {
-    const func: vk.PfnCreateDebugUtilsMessengerEXT = @ptrCast(base_dispatcher.getInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT").?);
+    const func: vk.PfnCreateDebugUtilsMessengerEXT = @ptrCast(base_dispatcher.getInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT"));
     _ = func(instance, create_info, null, debug_messenger);
 }
 
 pub fn destroyDebugUtilsMessenger(base_dispatcher: BaseDispatcher, instance: vk.Instance, debug_messenger: vk.DebugUtilsMessengerEXT) void {
-    const func: vk.PfnDestroyDebugUtilsMessengerEXT = @ptrCast(base_dispatcher.getInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT").?);
+    const func: vk.PfnDestroyDebugUtilsMessengerEXT = @ptrCast(base_dispatcher.getInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT"));
     _ = func(instance, debug_messenger, null);
 }
 
