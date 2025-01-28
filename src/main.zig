@@ -3,6 +3,7 @@ const builtin = @import("builtin");
 const zglfw = @import("zglfw");
 const vk = @import("vulkan");
 const vulkan = @import("vulkan.zig");
+const DebugUtils = @import("vk_debug_utils.zig");
 
 const BaseDispatch = vulkan.BaseDispatch;
 const InstanceDispatch = vulkan.InstanceDispatch;
@@ -24,6 +25,11 @@ fn initVulkan(allocator: std.mem.Allocator) !void {
         try extensions.append(ext);
     }
     try extensions.append(vk.extensions.khr_portability_enumeration.name);
+
+    if (builtin.mode == .Debug) {
+        std.log.info("Added debug utils extension", .{});
+        try extensions.append(vk.extensions.ext_debug_utils.name);
+    }
 
     const app_info: vk.ApplicationInfo = .{
         .p_application_name = "test",
@@ -64,10 +70,16 @@ fn initVulkan(allocator: std.mem.Allocator) !void {
         };
     }
 
+    var debug_messenger: vk.DebugUtilsMessengerEXT = undefined;
+    var debug_ci: vk.DebugUtilsMessengerCreateInfoEXT = undefined;
+
     if (builtin.mode == .Debug and layer_found) {
         std.log.info("Setting validation layers", .{});
         instance_ci.enabled_layer_count = @intCast(validation_layer_names.items.len);
         instance_ci.pp_enabled_layer_names = @ptrCast(validation_layer_names.items);
+
+        debug_ci = DebugUtils.CreateDefaultDebugUtilsCreateInfo();
+        instance_ci.p_next = @as(*vk.DebugUtilsMessengerCreateInfoEXT, &debug_ci);
     }
 
     // Create vulkan instance
@@ -79,7 +91,19 @@ fn initVulkan(allocator: std.mem.Allocator) !void {
     const vulkan_instance = Instance.init(instance, vki);
     errdefer vulkan_instance.destroyInstance(null);
 
+    if (builtin.mode == .Debug) {
+        debug_ci = DebugUtils.CreateDefaultDebugUtilsCreateInfo();
+
+        DebugUtils.createDebugUtilsMessenger(
+            base_dispatch,
+            vulkan_instance.handle,
+            &debug_ci,
+            &debug_messenger,
+        );
+    }
+
     // Clean up resources
+    DebugUtils.destroyDebugUtilsMessenger(base_dispatch, vulkan_instance.handle, debug_messenger);
     vulkan_instance.destroyInstance(null);
     allocator.destroy(vulkan_instance.wrapper);
 }
